@@ -11,7 +11,7 @@
   "dependencies": {
     "ltx": "^2.2.0",
     "node-xmpp-client": "^3.0.0",
-    "colorize-str": "^1.0.0",
+    "colorize-str": "^1.0.0"
   },
   "devDependencies": {
     "babel": "^6.3.13",
@@ -23,7 +23,7 @@
     "eslint": "^1.10.3",
     "eslint-config-airbnb": "^2.0.0",
     "eslint-plugin-react": "^3.11.3",
-    "nodemon": "^1.8.1",
+    "nodemon": "^1.8.1"
   },
   "repository": {
     "type": "git",
