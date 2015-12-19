@@ -19,22 +19,32 @@ Fishbot.on('online', () => {
 Fishbot.on('message', (data) => {
     const { from, message } = data;
 
-    const log = colorize(`{#f00}[CHAT] {#fff}${from} {#999}: ${message}`); // will fail...?
+    const log = colorize(`{#f00}[CHAT] {#fff}${from} {#999}: ${message}`);
     console.log(log);
 });
 
 Fishbot.on('command', (data) => {
-    console.log('got command : ', data);
-    // Fishbot.message('Hell no! <*)))><');
+    // console.log('got command : ', data);
+    Fishbot.message('Hell no! <*)))><');
 });
 
 Fishbot.on('presence', (data) => {
-    const { user, details } = data.from;
-    const info = JSON.stringify(details);
+    const { from, type } = data;
+    const { name, affiliation, role } = from;
 
-    const action = 'joined'; // @TODO
+    let userAction;
+    switch (type) {
+        case 'join':
+            userAction = '~>>>';
+            break;
+        case 'part':
+            userAction = '<<<~';
+            break;
+        default:
+            break;
+    }
 
-    const log = colorize(`{#0f0}[>>] {#fff}${user} {#555}${action}`);
+    const log = colorize(`{#0f0}[${userAction}] {#fff}${name} (${affiliation}/${role})`);
     console.log(log);
 });
 
