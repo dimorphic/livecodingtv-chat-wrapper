@@ -9,9 +9,10 @@
     "dev": "node_modules/.bin/babel src --out-dir dist --watch --debug"
   },
   "dependencies": {
+    "colorize-str": "^1.0.0",
+    "json-fs-store": "^1.0.0",
     "ltx": "^2.2.0",
-    "node-xmpp-client": "^3.0.0",
-    "colorize-str": "^1.0.0"
+    "node-xmpp-client": "^3.0.0"
   },
   "devDependencies": {
     "babel": "^6.3.13",

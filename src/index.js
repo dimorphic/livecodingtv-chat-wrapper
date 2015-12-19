@@ -24,25 +24,17 @@ Fishbot.on('message', (data) => {
 });
 
 Fishbot.on('command', (data) => {
-    // console.log('got command : ', data);
+    console.log('got command : ', data);
     Fishbot.message('Hell no! <*)))><');
+
+    console.log(Fishbot.users);
 });
 
 Fishbot.on('presence', (data) => {
     const { from, type } = data;
     const { name, affiliation, role } = from;
 
-    let userAction;
-    switch (type) {
-        case 'join':
-            userAction = '~>>>';
-            break;
-        case 'part':
-            userAction = '<<<~';
-            break;
-        default:
-            break;
-    }
+    const userAction = (type === 'part') ? '<<<' : '>>>';
 
     const log = colorize(`{#0f0}[${userAction}] {#fff}${name} (${affiliation}/${role})`);
     console.log(log);
