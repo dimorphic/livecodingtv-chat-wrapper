@@ -153,13 +153,12 @@ class Client extends EventEmitter {
         const channelAction = (stanza.attrs.type === 'unavailable') ? CHANNEL.PART : CHANNEL.JOIN;
 
         // treat channel / user action
-        // @TODO: add / update userlist
         switch (channelAction) {
             case CHANNEL.JOIN:
-                console.log(`[ ${CHANNEL.JOIN} ]`);
+                this.users.add(user);
                 break;
             case CHANNEL.PART:
-                console.log(`[ ${CHANNEL.PART} ]`);
+                this.users.remove(user);
                 break;
             default:
                 break;
@@ -211,6 +210,8 @@ class Client extends EventEmitter {
     //
     // @TODO
     onCommand(command) {
+        // cmds.public = []
+        // cmds.admin = []
         this.emit(TRIGGERS.COMMAND, command);
     }
 

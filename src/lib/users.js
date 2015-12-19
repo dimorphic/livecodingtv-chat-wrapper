@@ -6,11 +6,11 @@ class User {
     constructor(state = {}) {
         const { name, color, role, affiliation } = state;
 
-        this.name = name;
-        this.color = color;
+        this.name = name || null;
+        this.color = color || null;
 
-        this.role = role;
-        this.affiliation = affiliation;
+        this.role = role || null;
+        this.affiliation = affiliation || null;
     }
 }
 
@@ -41,12 +41,16 @@ class Users {
 
         if (exists) {
             // ...update user data?
+            // this.update(user);
             return void 0;
         }
 
         // create new user model
-        // const newUser = new User(data);
-        this.list[user.name] = user;
+        this.list[user.name] = new User(user);
+    }
+
+    update(user) {
+        // @TODO;
     }
 
     remove(user) {
