@@ -4,6 +4,10 @@ import ltx from 'ltx';
 import EventEmitter from 'events';
 
 //
+import { STANZA, CHANNEL, TRIGGERS } from './constants';
+import Users from './users';
+
+//
 //  Client class
 //
 class Client extends EventEmitter {
@@ -13,9 +17,8 @@ class Client extends EventEmitter {
         // spread options
         const { jid, room, username, password } = options;
 
-        // channels and users lists
-        this.channels = [];
-        this.users = [];
+        // xmpp pointer
+        this.client = null;
 
         // client config
         // user, password, jid, extra, etc
@@ -28,8 +31,9 @@ class Client extends EventEmitter {
             showHistory: true
         };
 
-        // xmpp pointer
-        this.client = null;
+        // channels and users lists
+        this.channels = null;
+        this.users = new Users();
 
         // go do magic
         this.init();
@@ -58,34 +62,26 @@ class Client extends EventEmitter {
     //
     setHandlers() {
         // online
-        this.client.on('online', (data) => {
-            this.onOnline(data);
-
-            // send presence?
-            this.emit('online', data);
-        });
+        this.client.on('online', this.onOnline.bind(this));
 
         // stanza
-        this.client.on('stanza', (stanza) => {
-            this.onStanza(stanza);
-
-            // stanza.type
-            this.emit('stanza', stanza);
-        });
+        this.client.on('stanza', this.onStanza.bind(this));
 
         // error
-        this.client.on('error', (error) => {
-            this.emit('error', error);
-        });
+        this.client.on('error', this.emit.bind(this));
     }
 
     //
     //  send helper
     //  @req: stanza
     //
-    send(stanza) { this.client.send(stanza); }
+    send(stanza) {
+        this.client.send(stanza);
+    }
 
+    //
     // HANDLERS
+    //
 
     //
     //  on online handler
@@ -93,6 +89,9 @@ class Client extends EventEmitter {
     onOnline(data) {
         // announce ourselves
         this.sendPresence();
+
+        // send presence?
+        this.emit(TRIGGERS.ONLINE, data);
     }
 
     //
@@ -104,10 +103,16 @@ class Client extends EventEmitter {
         // stanza.name: [ message, presence ]
         // stanza.type: [ groupchat, result? ]
 
+        // @PSEUDO
+        // if eventType
+        // if message
+        // if presence
+        // else event.name
+
         // get stanza / event type
         // @TODO: refactor this into getStanzaType / getMessageType ?
         switch (stanza.type) {
-            case 'result':
+            case STANZA.RESULT:
                 event = 'result';
                 break;
 
@@ -117,78 +122,85 @@ class Client extends EventEmitter {
 
         // treat event type
         switch (event) {
-            case 'message':
+            case STANZA.MESSAGE:
                 // call handler
                 this.onMessage(stanza);
                 break;
 
-            case 'presence':
+            case STANZA.PRESENCE:
                 // call handler
                 this.onPresence(stanza);
                 break;
 
             default:
                 // emit forward
-                this.emit(event, stanza);
+                this.emit(TRIGGERS.STANZA, stanza);
         }
-
-        // @PSEUDO
-        // if eventType
-
-        // if message
-        //  -> ignore / replay old message(s) - check for 'delay' child?
-        //  -> check if message is command and do stuffz
-        //  -> emit / broadcast normal message
-
-        // if presence
-        //  -> if user left -> remove from list & emit part event
-        //  -> if user joined -> add to list & emit join event
     }
 
     //
     //  on presence (join/part) handler
     //
+    //  @PSEUDO
+    //  -> if user left -> remove from list & emit part event
+    //  -> if user joined -> add to list & emit join event
+    //
     onPresence(stanza) {
         const channel = this.getChannel(stanza);
-        const user = this.getAuthor(stanza);
-        const userDetails = this.getAuthorDetails(stanza);
+        const user = this.getUser(stanza);
 
+        // did the user join or leave ?
+        const channelAction = (stanza.attrs.type === 'unavailable') ? CHANNEL.PART : CHANNEL.JOIN;
+
+        // treat channel / user action
         // @TODO: add / update userlist
-        // if userDetails -> update(channels[].users[user])
-
-        // unavailable
-        // console.log('stanza @ ', stanza.attrs.type);
+        switch (channelAction) {
+            case CHANNEL.JOIN:
+                console.log(`[ ${CHANNEL.JOIN} ]`);
+                break;
+            case CHANNEL.PART:
+                console.log(`[ ${CHANNEL.PART} ]`);
+                break;
+            default:
+                break;
+        }
 
         // broadcast presence event
-        this.emit('presence', {
-            channel: channel,
-            from: {
-                user: user,
-                details: userDetails
-            }
-            // type?
+        this.emit(TRIGGERS.PRESENCE, {
+            channel,
+            type: channelAction,
+            from: user
         });
     }
 
     //
     //  on message handler
     //
+    //  @PSEUDO:
+    //  -> ignore / replay old message(s) - check for 'delay' child?
+    //  -> check if message is command and do stuffz
+    //  -> emit / broadcast normal message
+    //
     onMessage(stanza) {
-        const user = this.getAuthor(stanza);
-        const msg = this.getMessage(stanza);
         const fromPast = stanza.getChild('delay');
+        const channel = this.getChannel(stanza);
+        const msg = this.getMessage(stanza);
+
+        // @TODO: get data from userlist store?
+        const user = this.getUserName(stanza);
 
         // this is a message from the past, a replay, deja-vu
-        // ignore it,
+        // ...ignore it.
         if (typeof fromPast === 'undefined') {
             // check for command argument trigger
-            if (msg.indexOf('!') == 0) {
+            if (msg.indexOf('!') === 0) {
                 this.onCommand(msg); // @TODO
             }
         }
 
         // broadcast message event
-        this.emit('message', {
+        this.emit(TRIGGERS.MESSAGE, {
+            channel,
             from: user,
             message: msg
         });
@@ -199,7 +211,7 @@ class Client extends EventEmitter {
     //
     // @TODO
     onCommand(command) {
-        this.emit('command', command);
+        this.emit(TRIGGERS.COMMAND, command);
     }
 
     // ---------------
@@ -216,18 +228,41 @@ class Client extends EventEmitter {
     // ---------------
     // MESSAGE HELPERS
     // ---------------
+    // @TODO: split into module?
 
     //
-    //  get message author
+    //  get full user (+details)
     //
-    getAuthor(stanza) {
+    getUser(stanza) {
+        const username = this.getUserName(stanza);
+        const rights = this.getUserRights(stanza);
+
+        const { affiliation = 'none', role = 'none' } = rights;
+
+        return {
+            name: username,
+            // color, // @TODO
+            affiliation,
+            role
+        };
+    }
+
+    //
+    //  get message author username
+    //
+    getUserName(stanza) {
         const { from = '' } = stanza.attrs;
         return from.substring(from.indexOf('/') + 1, from.length);
     }
 
-    getAuthorDetails(stanza) {
-        const affiliation = stanza.getChild('x').getChild('item').attrs;
-        return affiliation;
+    //
+    //  get user rights (admin/mod/affiliation)
+    //
+    getUserRights(stanza) {
+        const node = stanza.getChild('x').getChild('item');
+        const rights = (node.attrs) ? node.attrs : {};
+
+        return rights;
     }
 
     //
@@ -251,8 +286,8 @@ class Client extends EventEmitter {
     //
     sendMessage(body, to, type) {
         const message = this.createMessage('message', {
-            to: to,
-            type: type
+            to,
+            type
         })
         .c('body')
         .t(body);
