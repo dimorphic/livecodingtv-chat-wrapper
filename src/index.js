@@ -1,6 +1,5 @@
 // deps
-// import Client from './lib/client';
-import Client from './lib/client-class'; // go class?!
+import Client from './lib/client';
 import colorize from 'colorize-str';
 
 // settings
