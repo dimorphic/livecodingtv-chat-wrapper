@@ -1,24 +1,10 @@
-
-//
-//  User model
-//
-class User {
-    constructor(state = {}) {
-        const { name, color, role, affiliation } = state;
-
-        this.name = name || null;
-        this.color = color || null;
-
-        this.role = role || null;
-        this.affiliation = affiliation || null;
-    }
-}
+import User from './user';
 
 //
 //  Users
 //  factory / service / singleton ? mmhmmm...
 //
-class Users {
+export default class Users {
     constructor(list = {}) {
         this.list = list;
     }
@@ -78,6 +64,3 @@ class Users {
         return counter;
     }
 }
-
-// expose
-module.exports = Users;
