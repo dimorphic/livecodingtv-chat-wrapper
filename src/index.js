@@ -1,3 +1,4 @@
+
 // deps
 import Client from './lib/client';
 import colorize from 'colorize-str';
@@ -7,30 +8,12 @@ import * as CONFIG from './config';
 const INTERACTIVE = true;
 
 //
-//  Fishbot
+//  LCTV
 //
-const Fishbot = new Client(CONFIG);
+const LCTV = new Client(CONFIG);
 
 // handlers
-Fishbot.on('online', () => {
-    console.log('!!!!! i are online!');
-});
-
-Fishbot.on('message', (data) => {
-    const { from, message } = data;
-
-    const log = colorize(`{#f00}[CHAT] {#fff}${from} {#999}: ${message}`);
-    console.log(log);
-});
-
-Fishbot.on('command', (data) => {
-    console.log('got command : ', data);
-    Fishbot.message('Hell no! <*)))><');
-
-    console.log(Fishbot.users);
-});
-
-Fishbot.on('presence', (data) => {
+LCTV.on('presence', (data) => {
     const { from, type } = data;
     const { name, affiliation, role } = from;
 
@@ -40,8 +23,15 @@ Fishbot.on('presence', (data) => {
     console.log(log);
 });
 
-// Fishbot.on('join', (data) => {});
-// Fishbot.on('part', (data) => {});
+LCTV.on('message', (data) => {
+    const { from, message } = data;
+
+    const log = colorize(`{#f00}[CHAT] {#fff}${from} {#999}: ${message}`);
+    console.log(log);
+});
+
+// go live!
+LCTV.connect();
 
 // interactive CLI
 if (INTERACTIVE) {
@@ -51,7 +41,7 @@ if (INTERACTIVE) {
         const chunk = process.stdin.read();
         if (chunk !== null) {
             // process.stdout.write('data: ' + chunk);
-            Fishbot.message(chunk);
+            LCTV.message(chunk);
         }
     });
 
