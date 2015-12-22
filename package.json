@@ -4,9 +4,10 @@
   "description": "Livecoding.tv Node.js chat wrapper / client",
   "main": "index.js",
   "scripts": {
-    "start": "node_modules/.bin/nodemon --quiet --watch dist --exec 'clear && node dist'",
+    "dev": "node_modules/.bin/babel src --out-dir dist --watch --debug",
     "build": "node_modules/.bin/babel src --out-dir dist",
-    "dev": "node_modules/.bin/babel src --out-dir dist --watch --debug"
+    "start": "node_modules/.bin/nodemon --quiet --watch dist --exec 'clear && node dist'",
+    "bot": "node_modules/.bin/nodemon --quiet --watch dist --exec 'clear && node dist/fishbot'"
   },
   "dependencies": {
     "colorize-str": "^1.0.0",
