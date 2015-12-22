@@ -4,10 +4,15 @@
 //
 exports.TRIGGERS = {
     ONLINE: 'online',
+    CONNECT: 'connect',
+    // DISCONNECT: 'disconnect',
+    // RECONNECT: 'reconnect',
+
     PRESENCE: 'presence',
+    STANZA: 'stanza',
+
     MESSAGE: 'message',
-    COMMAND: 'command',
-    STANZA: 'stanza'
+    COMMAND: 'command'
 };
 
 //
@@ -16,6 +21,18 @@ exports.TRIGGERS = {
 exports.CHANNEL = {
     JOIN: 'join',
     PART: 'part'
+};
+
+//
+//  Connection / socket events
+//
+exports.CONNECTION = {
+    ONLINE: 'online',
+    CONNECT: 'connect', // ? double check these
+    // DISCONNECT: 'disconnect', // ?
+    // RECONNECT: 'reconnect', // ?
+    ERROR: 'error',
+    STANZA: 'stanza'
 };
 
 //
