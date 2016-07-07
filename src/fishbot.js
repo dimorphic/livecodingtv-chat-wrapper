@@ -1,54 +1,44 @@
 // deps
-// import Client from './lib/client';
 import Bot from './lib/bot';
-import colorize from 'colorize-str';
 import CONFIG from './config';
+import COMMANDS from './commands';
 
 // settings
-const INTERACTIVE = false;
+const INTERACTIVE = true;
+
+// setInterval(() => {
+//     console.log(require('util').inspect(process.memoryUsage()));
+// }, 1000);
 
 //
-//  Fishbot
+//  Fishbot - LCTV bot example
 //
 const Fishbot = new Bot({
-    config: CONFIG
-});
-
-// console.log('Fish @ ', Fishbot);
-
-// handlers
-// Fishbot.on('online', () => {
-//     console.log('!!!!! FISH ONLINE!');
-// });
-
-/*
-Fishbot.on('message', (data) => {
-    const { from, message } = data;
-
-    const log = colorize(`{#f00}[CHAT] {#fff}${from} {#999}: ${message}`);
-    console.log(log);
+    config: CONFIG,
+    commands: COMMANDS
 });
 
 Fishbot.on('command', (data) => {
     console.log('got command : ', data);
-    Fishbot.message('Hell no! <*)))><');
-
-    console.log(Fishbot.users);
+    Fishbot.say('Hell no! <*)))><');
 });
 
 Fishbot.on('presence', (data) => {
-    const { from, type } = data;
-    const { name, affiliation, role } = from;
+    const { fromPast, from, type } = data;
 
-    const userAction = (type === 'part') ? '<<<' : '>>>';
+    // console.log('fish presence @ ', data);
 
-    const log = colorize(`{#0f0}[${userAction}] {#fff}${name} (${affiliation}/${role})`);
-    console.log(log);
+    // welcome?
+    // @TODO: fix frompast
+    // if (!fromPast && type === 'join') {
+    //     // Fishbot.say(`Welcome ${from.name}. Stay cool!`);
+    //     console.log(`Welcome ${from.name}. Stay cool!`);
+    // }
 });
-*/
 
-// Fishbot.on('join', (data) => {});
-// Fishbot.on('part', (data) => {});
+Fishbot.on('join', (data) => {
+    console.log('join @ ', data);
+});
 
 // interactive CLI
 if (INTERACTIVE) {
@@ -58,7 +48,7 @@ if (INTERACTIVE) {
         const chunk = process.stdin.read();
         if (chunk !== null) {
             // process.stdout.write('data: ' + chunk);
-            Fishbot.message(chunk);
+            Fishbot.say(chunk);
         }
     });
 

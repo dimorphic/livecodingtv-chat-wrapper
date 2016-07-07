@@ -1,8 +1,6 @@
 module.exports = {
-    jid: '',
-    room: '',
-
-    // auth
-    username: '',
-    password: ''
+    host: 'livecoding.tv',
+    username: 'Fishbot',
+    password: '',
+    channel: 'nyx' // auto-join if set?
 };

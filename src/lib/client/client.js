@@ -3,8 +3,8 @@ import XMPP from 'node-xmpp-client';
 import ltx from 'ltx';
 import EventEmitter from 'events';
 
-//
-import { CONNECTION } from '../constants';
+// events and handlers
+import { CLIENT } from '../constants';
 import * as HANDLERS from './handlers';
 
 //
@@ -31,6 +31,9 @@ export default class Client extends EventEmitter {
 
         // xmpp / socket pointer
         // this.online = false;
+
+        // connection.connection ... meh...
+        // Client.client sux also
         this.connection = null;
 
         // channel list
@@ -58,6 +61,10 @@ export default class Client extends EventEmitter {
             password: this.config.password
         });
 
+        // keep-alive! @TODO
+        // this.connection.connection.socket.setTimeout(0);
+        // this.connection.connection.socket.setKeepAlive(true, 10000);
+
         // set handlers
         this.setHandlers();
     }
@@ -70,14 +77,14 @@ export default class Client extends EventEmitter {
         // @TODO: auto-bind of handlers
 
         // online
-        this.connection.on(CONNECTION.ONLINE, HANDLERS.onOnline.bind(this));
-        this.connection.on(CONNECTION.CONNECT, HANDLERS.onConnect.bind(this));
+        this.connection.on(CLIENT.CONNECTION_ONLINE, HANDLERS.onOnline.bind(this));
+        this.connection.on(CLIENT.CONNECTION_CONNECT, HANDLERS.onConnect.bind(this));
 
         // stanza
-        this.connection.on(CONNECTION.STANZA, HANDLERS.onStanza.bind(this));
+        this.connection.on(CLIENT.CONNECTION_STANZA, HANDLERS.onStanza.bind(this));
 
         // error
-        this.connection.on(CONNECTION.ERROR, HANDLERS.onError.bind(this));
+        this.connection.on(CLIENT.CONNECTION_ERROR, HANDLERS.onError.bind(this));
     }
 
     //
@@ -149,7 +156,11 @@ export default class Client extends EventEmitter {
     //  message helper
     //
     message(message, to = this.config.channel, type = 'groupchat') {
-        console.log('here!');
+        if (!message) {
+            console.error('Need message body, bro!');
+        }
+
+        // do it
         this.sendMessage(message, to, type);
     }
 

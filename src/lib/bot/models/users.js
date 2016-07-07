@@ -22,28 +22,46 @@ export default class Users {
     }
 
     add(user) {
+        // console.log('add user @', user);
+
         // check for user
-        const exists = this.getUser(user);
+        const exists = this.getUser(user.name);
 
         if (exists) {
-            // ...update user data?
-            // this.update(user);
+            // ...update user data
+            this.update(exists.name, user);
             return void 0;
         }
 
         // create new user model
+        // @TODO: lowercase username key?
+        // const username = (user.name).toLowerCase();
         this.list[user.name] = new User(user);
     }
 
-    update(user) {
-        // @TODO;
+    update(userId, newState) {
+        const user = this.getUser(userId);
+        if (!user || !newState) { return void 0; }
+
+        console.log('updating user @ ', user);
+
+        // loop thru state
+        for (const item in newState) {
+            // if local data invalid
+            if (user[item] !== newState[item]) {
+                // ...update it
+                user[item] = newState[item];
+            }
+        }
     }
 
     remove(user) {
-        const exists = this.getUser(user);
+        // console.log('remove user @', user);
+
+        const exists = this.getUser(user.name);
         if (!exists) { return void 0; }
 
-        delete this.list[user.name];
+        delete this.list[exists.name];
     }
 
     count() {

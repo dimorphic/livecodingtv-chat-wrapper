@@ -1,6 +1,9 @@
 /* eslint no-use-before-define: 0*/
-import { TRIGGERS, STANZA, CHANNEL } from '../constants';
+import { STANZA, CLIENT } from '../constants';
 import Utils from './utils';
+
+// @DEBUG
+import { inspect } from '../helpers';
 
 //
 //  online handler
@@ -12,15 +15,15 @@ export function onOnline(data) {
     }
 
     // emit online event
-    this.emit(TRIGGERS.ONLINE, data);
+    this.emit(CLIENT.ONLINE, data);
 }
 
 //
 //  connection handlers
 //
-export function onConnect(data) { this.emit(TRIGGERS.CONNECT, data); }
-export function onDisconnect(data) { this.emit(TRIGGERS.DISCONNECT, data); }
-export function onReconnect(data) { this.emit(TRIGGERS.RECONNECT, data); }
+export function onConnect(data) { this.emit(CLIENT.CONNECT, data); }
+export function onDisconnect(data) { this.emit(CLIENT.DISCONNECT, data); }
+export function onReconnect(data) { this.emit(CLIENT.RECONNECT, data); }
 export function onError(error) {
     console.error(error); // proxy throw new?
 }
@@ -65,8 +68,38 @@ export function onStanza(stanza) {
 
         default:
             // emit forward
-            this.emit(TRIGGERS.STANZA, stanza);
+            this.emit(CLIENT.CONNECTION_STANZA, stanza);
     }
+}
+
+//
+//  on presence (join/part) handler
+//
+//  @PSEUDO
+//  -> if user left -> remove from list & emit part event
+//  -> if user joined -> add to list & emit join event
+//
+export function onPresence(stanza) {
+    const fromPast = Utils.Stanza.fromPast(stanza);
+    const channel = Utils.Stanza.getChannel(stanza);
+    const user = Utils.Stanza.getUser(stanza);
+
+    // if (fromPast) { return void 0; } // @TODO
+    // console.log('stz  @ ', util.inspect(stanza, { showHidden: true, depth: null, colors: true }));
+    // console.log('client fromPast @ ', util.inspect(stanza.getChild('delay'), { showHidden: true, depth: null, colors: true }));
+    // console.log('stanza type @ ', stanza.attrs.type);
+
+    // did the user join or leave ?
+    const channelAction = (stanza.attrs.type === 'unavailable')
+                        ? CLIENT.CHANNEL_PART : CLIENT.CHANNEL_JOIN;
+
+    // broadcast presence event
+    this.emit(CLIENT.PRESENCE, {
+        channel,
+        type: channelAction,
+        from: user,
+        fromPast
+    });
 }
 
 //
@@ -87,15 +120,22 @@ export function onMessage(stanza) {
 
     // this is a message from the past, a replay, deja-vu
     // ...ignore it.
-    if (typeof fromPast === 'undefined') {
+    if (!fromPast) {
         // check for command argument trigger
+        // @TODO: const COMMAND_TRIGGER = '!';
         if (msg.indexOf('!') === 0) {
-            this.onCommand(msg); // @TODO
+            const COMMAND = {
+                channel,
+                from: user,
+                command: msg
+            };
+
+            onCommand.call(this, COMMAND); // @TODO
         }
     }
 
     // broadcast message event
-    this.emit(TRIGGERS.MESSAGE, {
+    this.emit(CLIENT.MESSAGE, {
         channel,
         from: user,
         message: msg
@@ -103,35 +143,21 @@ export function onMessage(stanza) {
 }
 
 //
-//  on presence (join/part) handler
+//  on command message handler
 //
-//  @PSEUDO
-//  -> if user left -> remove from list & emit part event
-//  -> if user joined -> add to list & emit join event
-//
-export function onPresence(stanza) {
-    const channel = Utils.Stanza.getChannel(stanza);
-    const user = Utils.Stanza.getUser(stanza);
+export function onCommand(data) {
+    const { channel, from, command } = data;
 
-    // did the user join or leave ?
-    const channelAction = (stanza.attrs.type === 'unavailable') ? CHANNEL.PART : CHANNEL.JOIN;
+    // spread command and arguments
+    const split = command.split(' ');
+    const cmd = split[0].substring(1);
+    const args = split[1] || [];
 
-    // treat channel / user action
-    switch (channelAction) {
-        case CHANNEL.JOIN:
-            // this.users.add(user);
-            break;
-        case CHANNEL.PART:
-            // this.users.remove(user);
-            break;
-        default:
-            break;
-    }
-
-    // broadcast presence event
-    this.emit(TRIGGERS.PRESENCE, {
+    // broadcast command event
+    this.emit(CLIENT.COMMAND, {
         channel,
-        type: channelAction,
-        from: user
+        from,
+        command: cmd,
+        args
     });
 }

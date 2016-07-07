@@ -1,45 +1,58 @@
+// customize at will
+
 //
-//  Client triggered event types
-//  @TODO: customize more!
+//  CLIENT event types
 //
-exports.TRIGGERS = {
+const CLIENT = {
+    CONNECTION_ONLINE: 'online',
+    CONNECTION_CONNECT: 'connect',
+    // CONNECTION_DISCONNECT: 'disconnect',
+    // CONNECTION_RECONNECT: 'reconnect',
+    CONNECTION_ERROR: 'error',
+    CONNECTION_STANZA: 'stanza',
+
     ONLINE: 'online',
     CONNECT: 'connect',
-    // DISCONNECT: 'disconnect',
-    // RECONNECT: 'reconnect',
 
     PRESENCE: 'presence',
-    STANZA: 'stanza',
+    CHANNEL_JOIN: 'join',
+    CHANNEL_PART: 'part',
 
     MESSAGE: 'message',
     COMMAND: 'command'
 };
 
 //
-//  Channel event types
+//  BOT event types
 //
-exports.CHANNEL = {
-    JOIN: 'join',
-    PART: 'part'
+const BOT = {
+    ONLINE: 'bot.online',
+    ERROR: 'bot.error',
+
+    PRESENCE: 'bot.presence',
+    JOIN: 'bot.join', // for commodity
+    PART: 'bot.part', // for commodity
+
+    MESSAGE: 'bot.mesage',
+    COMMAND: 'bot.command'
 };
 
-//
-//  Connection / socket events
-//
-exports.CONNECTION = {
-    ONLINE: 'online',
-    CONNECT: 'connect', // ? double check these
-    // DISCONNECT: 'disconnect', // ?
-    // RECONNECT: 'reconnect', // ?
-    ERROR: 'error',
-    STANZA: 'stanza'
-};
+//  ########################################
+//  No need to touch below most of the time.
+//  ########################################
 
 //
-//  Stanza message types
+//  STANZA message types
 //
-exports.STANZA = {
+const STANZA = {
     MESSAGE: 'message',
     PRESENCE: 'presence',
     RESULT: 'result'
+};
+
+// expose
+module.exports = {
+    CLIENT,
+    BOT,
+    STANZA
 };

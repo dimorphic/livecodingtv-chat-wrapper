@@ -1,11 +1,10 @@
 //
 //  Commands
 //  each command is a pure function
-//  ...that receives the Client as an arg
+//  ...that receives the Bot as an arg
 //
-import help from './help';
+import admin from './admin';
+import common from './public';
 
 // export commands
-module.exports = {
-    help
-};
+module.exports = { admin, common };

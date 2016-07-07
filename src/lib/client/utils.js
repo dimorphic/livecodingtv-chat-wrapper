@@ -1,3 +1,6 @@
+// @DEBUG
+import { inspect } from '../helpers';
+
 //
 //  Common util helpers
 //
@@ -12,7 +15,13 @@ const Stanza = {}; // ?
 // is stanza message from past ? (history replay¿)
 //
 Stanza.fromPast = (stanza) => {
-    return stanza.getChild('delay');
+    const delay = stanza.getChild('delay');
+    const fromPast = (delay ? true : false);
+
+    // console.log('delay @ ', delay);
+    // console.log('frompast @ ', fromPast);
+
+    return fromPast;
 };
 
 //
@@ -20,15 +29,17 @@ Stanza.fromPast = (stanza) => {
 //
 Stanza.getUser = (stanza) => {
     const username = Stanza.getUserName(stanza);
-    const rights = Stanza.getUserRights(stanza);
+    const details = Stanza.getUserDetails(stanza);
 
-    const { affiliation = 'none', role = 'none' } = rights;
+    const { color, affiliation, premium, role, staff } = details;
 
     return {
         name: username,
-        // color, // @TODO
+        color,
         affiliation,
-        role
+        premium,
+        role,
+        staff
     };
 };
 
@@ -43,11 +54,23 @@ Stanza.getUserName = (stanza) => {
 //
 //  get user rights (admin/mod/affiliation)
 //
+/*
 Stanza.getUserRights = (stanza) => {
     const node = stanza.getChild('x').getChild('item');
     const rights = (node.attrs) ? node.attrs : {};
 
     return rights;
+};
+*/
+
+Stanza.getUserDetails = (stanza) => {
+    const nodes = stanza.getChildren('x');
+
+    const rights = nodes[0].getChild('item').attrs || {};
+    const extras = nodes[1].getChild('item').attrs || {};
+
+    const userDetails = Object.assign({}, rights, extras);
+    return userDetails;
 };
 
 //

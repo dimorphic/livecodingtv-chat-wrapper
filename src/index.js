@@ -1,4 +1,3 @@
-
 // deps
 import Client from './lib/client';
 import colorize from 'colorize-str';
@@ -8,7 +7,7 @@ import * as CONFIG from './config';
 const INTERACTIVE = true;
 
 //
-//  LCTV
+//  Livecoding.tv - interactive demo example
 //
 const LCTV = new Client(CONFIG);
 
